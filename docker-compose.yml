@@ -9,7 +9,7 @@ volumes:
 
 services:
   database:
-    build: backend/.docker/postgres
+    build: bbackend/.docker/postgres
     image: postgres:16
     container_name: soil-postgres
     restart: always
@@ -23,10 +23,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./backend/postgres-data:/var/lib/postgresql/data
+      - ./bbackend/postgres-data:/var/lib/postgresql/data
 
   frontend:
-    build: frontend/docker/
+    build: ffrontend/docker/
     entrypoint: docker/entrypoint.sh
     container_name: soil-front
     networks:
@@ -36,10 +36,10 @@ services:
     env_file:
       - .env
     volumes:
-      - ./frontend:/usr/src/app
+      - ./ffrontend:/usr/src/app
 
   backend:
-    build: backend/.docker/backend
+    build: bbackend/.docker/backend
     entrypoint: .docker/entrypoint.sh
     container_name: soil-api
     networks:
@@ -52,7 +52,7 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:123456@database:5432/soil-db
     volumes:
-      - ./backend:/usr/src/app
+      - ./bbackend:/usr/src/app
 
   prometeus:
     image: prom/prometheus
@@ -61,7 +61,7 @@ services:
     hostname: prometheus
     restart: always
     volumes:
-      - ./backend/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./bbackend/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
