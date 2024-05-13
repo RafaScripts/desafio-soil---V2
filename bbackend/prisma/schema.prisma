@@ -1,0 +1,46 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String             @id @default(cuid())
+  name          String
+  email         String             @unique
+  password_hash String
+  role          Role               @default(USER)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  favoriteGames UserFavoriteGame[]
+}
+
+model Game {
+  id        String             @id @default(cuid())
+  name      String
+  thumbnail String
+  rate      Float
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  users     UserFavoriteGame[]
+}
+
+model UserFavoriteGame {
+  id        String   @id @default(cuid())
+  userId    String
+  gameId    String
+  platform  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  game      Game     @relation(fields: [gameId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  USER
+}

@@ -1,0 +1,70 @@
+version: '3.8'
+
+networks:
+  soil-net:
+    external: true
+
+volumes:
+  postgres-data:
+
+services:
+  database:
+    build: .docker/postgres
+    image: postgres:16
+    container_name: soil-postgres
+    restart: always
+    shm_size: 128mb
+    networks:
+      - soil-net
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  backend:
+    build: .docker/backend
+    entrypoint: .docker/entrypoint.sh
+    container_name: soil-api
+    networks:
+      - soil-net  # Mantido conforme definido
+    ports:
+      - '3000:3000'
+      - '9100:9100'
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://postgres:123456@database:5432/soil-db
+    volumes:
+      - .:/usr/src/app
+
+  prometeus:
+    image: prom/prometheus
+    user: root
+    container_name: soil-prometheus
+    hostname: prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - soil-net
+    ports:
+        - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: soil-grafana
+    restart: always
+    hostname: grafana
+    environment:
+        - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - soil-net
+    ports:
+      - "3003:3000"
